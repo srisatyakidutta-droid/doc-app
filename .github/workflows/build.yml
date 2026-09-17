@@ -20,6 +20,44 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Setup App & Build
+        run: |
+          cd ..
+          flutter create doc_app --project-name doc_app --org com.example.docapp
+          cp -r doc-app/lib/* doc_app/lib/
+          cd doc_app
+          flutter pub add image_picker google_mlkit_text_recognition pdf printing
+          flutter build apk --release --no-tree-shake-icons
+          mkdir -p $GITHUB_WORKSPACE/output
+          cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/output/
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: output/app-release.apk
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
       - name: Initialize Flutter Project Structure
         run: |
           mkdir temp_app
